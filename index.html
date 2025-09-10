@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AP Language Scoring Olympics</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        // Icon components
+        const Trophy = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+        );
+        
+        const Users = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+            </svg>
+        );
+        
+        const Target = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+        
+        const Award = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+        );
+        
+        const Plus = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+        );
+        
+        const X = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        );
+        
+        const Check = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+        );
+
+        const ScoringOlympics = () => {
+          const [teams, setTeams] = React.useState([]);
+          const [essays, setEssays] = React.useState([]);
+          const [currentEssay, setCurrentEssay] = React.useState(0);
+          const [submissions, setSubmissions] = React.useState({});
+          const [showResults, setShowResults] = React.useState(false);
+          const [gameStarted, setGameStarted] = React.useState(false);
+          const [newTeamName, setNewTeamName] = React.useState('');
+          const [newEssayTitle, setNewEssayTitle] = React.useState('');
+          const [newEssayScore, setNewEssayScore] = React.useState('');
+
+          // Add team
+          const addTeam = () => {
+            if (newTeamName.trim()) {
+              setTeams([...teams, { id: Date.now(), name: newTeamName.trim(), totalPoints: 0 }]);
+              setNewTeamName('');
+            }
+          };
+
+          // Add essay
+          const addEssay = () => {
+            if (newEssayTitle.trim() && newEssayScore) {
+              setEssays([...essays, { 
+                id: Date.now(), 
+                title: newEssayTitle.trim(), 
+                officialScore: parseInt(newEssayScore),
+                description: `Essay ${essays.length + 1}: ${newEssayTitle.trim()}`
+              }]);
+              setNewEssayTitle('');
+              setNewEssayScore('');
+            }
+          };
+
+          // Submit score
+          const submitScore = (teamId, score) => {
+            const key = `${currentEssay}-${teamId}`;
+            setSubmissions(prev => ({
+              ...prev,
+              [key]: parseInt(score)
+            }));
+          };
+
+          // Calculate points for accuracy
+          const calculatePoints = (submittedScore, officialScore) => {
+            const difference = Math.abs(submittedScore - officialScore);
+            if (difference === 0) return 10; // Perfect match
+            if (difference === 1) return 7;  // Close
+            if (difference === 2) return 4;  // Somewhat close
+            return 1; // Participation point
+          };
+
+          // Reveal results for current essay
+          const revealResults = () => {
+            if (essays.length === 0) return;
+            
+            const currentEssayData = essays[currentEssay];
+            const updatedTeams = teams.map(team => {
+              const key = `${currentEssay}-${team.id}`;
+              const submittedScore = submissions[key];
+              if (submittedScore !== undefined) {
+                const points = calculatePoints(submittedScore, currentEssayData.officialScore);
+                return { ...team, totalPoints: team.totalPoints + points };
+              }
+              return team;
+            });
+            
+            setTeams(updatedTeams);
+            setShowResults(true);
+          };
+
+          // Move to next essay
+          const nextEssay = () => {
+            if (currentEssay < essays.length - 1) {
+              setCurrentEssay(currentEssay + 1);
+              setShowResults(false);
+            }
+          };
+
+          // Reset game
+          const resetGame = () => {
+            setSubmissions({});
+            setCurrentEssay(0);
+            setShowResults(false);
+            setTeams(teams.map(team => ({ ...team, totalPoints: 0 })));
+          };
+
+          // Sort teams by points for leaderboard
+          const sortedTeams = [...teams].sort((a, b) => b.totalPoints - a.totalPoints);
+
+          const currentEssayData = essays[currentEssay];
+          const allTeamsSubmitted = teams.every(team => 
+            submissions[`${currentEssay}-${team.id}`] !== undefined
+          );
+
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-4">
+              <div className="max-w-6xl mx-auto">
+                {/* Header */}
+                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Trophy className="text-blue-600 w-8 h-8" />
+                      <h1 className="text-3xl font-bold text-gray-800">AP Language Scoring Olympics</h1>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={resetGame}
+                        className="px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500 transition-colors"
+                      >
+                        Reset Game
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {!gameStarted ? (
+                  /* Setup Phase */
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Team Setup */}
+                    <div className="bg-white rounded-lg shadow-lg p-6">
+                      <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                        <Users className="text-blue-500" />
+                        Teams ({teams.length})
+                      </h2>
+                      
+                      <div className="flex gap-2 mb-4">
+                        <input
+                          type="text"
+                          value={newTeamName}
+                          onChange={(e) => setNewTeamName(e.target.value)}
+                          placeholder="Team name"
+                          className="flex-1 px-3 py-2 border rounded-lg"
+                          onKeyPress={(e) => e.key === 'Enter' && addTeam()}
+                        />
+                        <button
+                          onClick={addTeam}
+                          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-1"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Add
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        {teams.map(team => (
+                          <div key={team.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span className="font-medium">{team.name}</span>
+                            <button
+                              onClick={() => setTeams(teams.filter(t => t.id !== team.id))}
+                              className="text-blue-500 hover:text-blue-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Essay Setup */}
+                    <div className="bg-white rounded-lg shadow-lg p-6">
+                      <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                        <Target className="text-blue-600" />
+                        Essays ({essays.length})
+                      </h2>
+                      
+                      <div className="space-y-2 mb-4">
+                        <input
+                          type="text"
+                          value={newEssayTitle}
+                          onChange={(e) => setNewEssayTitle(e.target.value)}
+                          placeholder="Essay title/description"
+                          className="w-full px-3 py-2 border rounded-lg"
+                        />
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            value={newEssayScore}
+                            onChange={(e) => setNewEssayScore(e.target.value)}
+                            placeholder="Official score (0-6)"
+                            min="0"
+                            max="6"
+                            className="flex-1 px-3 py-2 border rounded-lg"
+                          />
+                          <button
+                            onClick={addEssay}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-1"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        {essays.map((essay, index) => (
+                          <div key={essay.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                              <span className="font-medium">{essay.title}</span>
+                              <span className="text-sm text-gray-500 ml-2">(Score: {essay.officialScore})</span>
+                            </div>
+                            <button
+                              onClick={() => setEssays(essays.filter(e => e.id !== essay.id))}
+                              className="text-blue-500 hover:text-blue-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Start Game Button */}
+                    {teams.length > 0 && essays.length > 0 && (
+                      <div className="md:col-span-2 text-center">
+                        <button
+                          onClick={() => setGameStarted(true)}
+                          className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white text-xl font-bold rounded-lg hover:from-blue-600 hover:to-blue-800 transition-all shadow-lg"
+                        >
+                          Start Scoring Olympics!
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Game Phase */
+                  <div className="grid lg:grid-cols-3 gap-6">
+                    {/* Current Essay */}
+                    <div className="lg:col-span-2 bg-white rounded-lg shadow-lg p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-bold">
+                          Essay {currentEssay + 1} of {essays.length}
+                        </h2>
+                        <div className="text-sm text-gray-500">
+                          {allTeamsSubmitted ? 'All teams submitted!' : `${Object.keys(submissions).filter(key => key.startsWith(`${currentEssay}-`)).length}/${teams.length} submitted`}
+                        </div>
+                      </div>
+
+                      {currentEssayData && (
+                        <div className="mb-6">
+                          <h3 className="text-lg font-semibold mb-2">{currentEssayData.title}</h3>
+                          <p className="text-gray-600">{currentEssayData.description}</p>
+                        </div>
+                      )}
+
+                      {/* Team Scoring */}
+                      <div className="space-y-4">
+                        {teams.map(team => {
+                          const submissionKey = `${currentEssay}-${team.id}`;
+                          const hasSubmitted = submissions[submissionKey] !== undefined;
+                          
+                          return (
+                            <div key={team.id} className="border rounded-lg p-4">
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">{team.name}</span>
+                                {hasSubmitted ? (
+                                  <div className="flex items-center gap-2 text-blue-700">
+                                    <Check className="w-4 h-4" />
+                                    <span>Score: {submissions[submissionKey]}</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <select
+                                      onChange={(e) => submitScore(team.id, e.target.value)}
+                                      className="px-3 py-1 border rounded"
+                                      defaultValue=""
+                                    >
+                                      <option value="" disabled>Select score</option>
+                                      {[0,1,2,3,4,5,6].map(score => (
+                                        <option key={score} value={score}>{score}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-4 mt-6">
+                        {allTeamsSubmitted && !showResults && (
+                          <button
+                            onClick={revealResults}
+                            className="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            Reveal Results!
+                          </button>
+                        )}
+                        
+                        {showResults && currentEssay < essays.length - 1 && (
+                          <button
+                            onClick={nextEssay}
